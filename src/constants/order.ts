@@ -1,0 +1,10 @@
+export const ORDER_CURRENCY = "COP" as const;
+
+export const ORDER_STATUS = {
+  PENDING: "PENDING",
+  PAID: "PAID",
+  FAILED: "FAILED",
+  CANCELLED: "CANCELLED",
+  SHIPPED: "SHIPPED",
+  DELIVERED: "DELIVERED",
+} as const;

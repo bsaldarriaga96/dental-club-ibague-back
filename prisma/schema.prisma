@@ -1,0 +1,130 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Product {
+  id          String  @id @default(uuid())
+  siigoId     String  @unique
+  name        String
+  sku         String?
+  description String?
+  price       Decimal
+  stock       Int
+  brand       String?
+  category    String?
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderItems OrderItem[]
+
+  @@index([price])
+  @@index([category])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  SHIPPED
+  DELIVERED
+}
+
+enum PaymentProvider {
+  WOMPI
+}
+
+enum PaymentMethod {
+  WOMPI_WIDGET
+  PSE
+  CARD
+}
+
+model User {
+  id           String  @id @default(uuid())
+  email        String  @unique
+  passwordHash String
+  name         String?
+  phone        String?
+
+  emailVerified Boolean   @default(false)
+  verifiedAt    DateTime?
+
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([emailVerified])
+}
+
+model Order {
+  id     String      @id @default(uuid())
+  status OrderStatus @default(PENDING)
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  customerName     String
+  customerLastName String
+  customerEmail    String
+  customerPhone    String
+  customerDocument String?
+
+  shipDepartment   String
+  shipCity         String
+  shipNeighborhood String
+  shipAddress      String
+  shipNotes        String?
+
+  currency String  @default("COP")
+  subtotal Decimal @db.Decimal(14, 2)
+  shipping Decimal @default(0) @db.Decimal(14, 2)
+  total    Decimal @db.Decimal(14, 2)
+
+  paymentProvider PaymentProvider @default(WOMPI)
+  paymentMethod   PaymentMethod   @default(WOMPI_WIDGET)
+
+  paymentReference String? @unique
+
+  wompiTransactionId String? @unique
+
+  paymentStatusDetail String?
+
+  items OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([customerEmail, createdAt])
+  @@index([status, createdAt])
+  @@index([paymentReference])
+}
+
+model OrderItem {
+  id String @id @default(uuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  name      String
+  sku       String?
+  image     String?
+  unitPrice Decimal @db.Decimal(14, 2)
+  quantity  Int
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
