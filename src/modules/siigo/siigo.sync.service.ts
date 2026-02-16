@@ -29,7 +29,10 @@ export async function syncProductsFromSiigo() {
           sku: product.sku,
           price: product.price,
           stock: product.stock,
-          isActive: product.stock > 0,
+          reference: product.reference,
+          brand: product.brand,
+          description: product.description,
+          isActive: product.isActive,
         },
         create: {
           siigoId: product.siigoId,
@@ -37,7 +40,10 @@ export async function syncProductsFromSiigo() {
           sku: product.sku,
           price: product.price,
           stock: product.stock,
-          isActive: product.stock > 0,
+          reference: product.reference,
+          brand: product.brand,
+          description: product.description,
+          isActive: product.isActive,
         },
       });
 

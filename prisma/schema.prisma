@@ -17,6 +17,7 @@ model Product {
   stock       Int
   brand       String?
   category    String?
+  reference   String?
   isActive    Boolean @default(true)
 
   createdAt DateTime @default(now())

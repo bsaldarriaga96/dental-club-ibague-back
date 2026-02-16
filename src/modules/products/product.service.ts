@@ -27,6 +27,8 @@ export async function getProducts({
   const where: any = {
     sku: { notIn: [...EXCLUDED_SKUS], not: null },
   };
+  where.isActive = true;
+
 
   if (search?.trim()) {
     const terms = search.trim().split(/\s+/);
@@ -42,7 +44,6 @@ export async function getProducts({
 
   if (category) where.category = category;
   if (brand) where.brand = brand;
-  if (isActive !== undefined) where.isActive = isActive;
 
   if (minPrice !== undefined || maxPrice !== undefined) {
     where.price = {};

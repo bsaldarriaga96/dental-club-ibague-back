@@ -5,6 +5,8 @@ import productsRoutes from "./modules/products/products.routes";
 import { wompiRouter } from "./modules/payments/wompi/wompi.routes";
 import { ordersRouter } from "./modules/orders/orders.routes";
 import { wompiWebhookController } from "./modules/payments/wompi/wompi.webhook.controller";
+import { syncProductsFromSiigo } from "./modules/siigo/siigo.sync.service";
+
 export function createApp() {
   const app = express();
 
@@ -17,6 +19,16 @@ export function createApp() {
   );
 
   app.use(express.json());
+
+  app.post("/api/internal/sync/siigo-products", async (req, res) => {
+    const token = req.header("x-cron-token");
+    if (!token || token !== process.env.CRON_TOKEN) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const result = await syncProductsFromSiigo();
+    return res.json(result);
+  });
 
   app.use((req, _res, next) => {
     next();
