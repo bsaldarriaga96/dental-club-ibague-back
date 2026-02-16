@@ -26,8 +26,13 @@ export function createApp() {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const result = await syncProductsFromSiigo();
-    return res.json(result);
+    try {
+      const result = await syncProductsFromSiigo();
+      return res.json(result);
+    } catch (err) {
+      console.error("Siigo sync error:", err);
+      return res.status(500).json({ message: "Sync failed" });
+    }
   });
 
   app.use((req, _res, next) => {

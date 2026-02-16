@@ -13,4 +13,5 @@ jobs:
           SYNC_URL: ${{ secrets.SYNC_URL }}
           CRON_TOKEN: ${{ secrets.CRON_TOKEN }}
         run: |
-          curl --fail -X POST "$SYNC_URL" -H "x-cron-token: $CRON_TOKEN"
+          curl --fail-with-body -X POST "$SYNC_URL" -H "x-cron-token: $CRON_TOKEN"
+
