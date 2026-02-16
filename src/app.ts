@@ -20,7 +20,7 @@ export function createApp() {
 
   app.use(express.json());
 
-  app.post("/api/sync/siigo", async (req, res) => {
+  app.post("/api/internal/sync/siigo-products", async (req, res) => {
     const token = req.header("x-cron-token");
     if (!token || token !== process.env.CRON_TOKEN) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -30,8 +30,8 @@ export function createApp() {
       const result = await syncProductsFromSiigo();
       return res.json(result);
     } catch (err) {
-      console.error("Siigo sync error:", err);
-      return res.status(500).json({ message: "Sync failed" });
+      console.error("Siigo sync failed:", err);
+      return res.status(500).json({ error: "Error sincronizando Siigo" });
     }
   });
 
