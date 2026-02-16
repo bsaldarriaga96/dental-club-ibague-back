@@ -20,7 +20,7 @@ export function createApp() {
 
   app.use(express.json());
 
-  app.post("/api/internal/sync/siigo", async (req, res) => {
+  app.post("/api/sync/siigo", async (req, res) => {
     const token = req.header("x-cron-token");
     if (!token || token !== process.env.CRON_TOKEN) {
       return res.status(401).json({ message: "Unauthorized" });
