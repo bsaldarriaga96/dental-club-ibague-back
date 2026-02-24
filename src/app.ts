@@ -33,7 +33,7 @@ export function createApp() {
     }),
   );
 
-  app.use(cookieParser()); // opcional, útil pero no suficiente
+  app.use(cookieParser());
 
   const PgSession = connectPgSimple(session);
 
@@ -47,11 +47,16 @@ export function createApp() {
 
   app.set("trust proxy", 1);
 
+  const SESSION_SECRET = process.env.SESSION_SECRET;
+  if (!SESSION_SECRET) {
+    throw new Error("SESSION_SECRET is required");
+  }
+
   app.use(
     session({
       store: new PgSession({ pool, createTableIfMissing: true }),
       name: "sid",
-      secret: process.env.SESSION_SECRET!,
+      secret: SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
       cookie: {
