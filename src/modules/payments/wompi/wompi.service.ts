@@ -1,7 +1,5 @@
 import crypto from "crypto";
 
-// ----- Widget integrity (frontend widget) -----
-// sha256(reference + amountInCents + currency + integritySecret) [webhook no usa esto] [web:473]
 export function buildIntegritySignature(params: {
   reference: string;
   amountInCents: number;
@@ -13,12 +11,10 @@ export function buildIntegritySignature(params: {
   return crypto.createHash("sha256").update(raw, "utf8").digest("hex");
 }
 
-// ----- Webhook checksum (eventos) -----
 function getByPath(obj: any, path: string) {
   return path.split(".").reduce((acc, key) => (acc ? acc[key] : undefined), obj);
 }
 
-// Valida x-event-checksum usando payload.signature.properties y WOMPI_WEBHOOK_SECRET [web:382]
 export function validateWompiEventChecksum(payload: any, webhookSecret: string, headerChecksum?: string) {
   const checksumFromBody: string | undefined = payload?.signature?.checksum;
   const props: string[] | undefined = payload?.signature?.properties;
@@ -33,12 +29,6 @@ export function validateWompiEventChecksum(payload: any, webhookSecret: string, 
   });
 
   const concatenated = values.join("");
-
-  console.log("Wompi props:", props);
-console.log("Wompi values:", values);
-console.log("Wompi concatenated:", concatenated);
-console.log("Header checksum:", headerChecksum);
-console.log("Body checksum:", checksumFromBody);
 
   const computed = crypto.createHmac("sha256", webhookSecret).update(concatenated, "utf8").digest("hex");
 

@@ -10,6 +10,7 @@ interface ProductFilters {
   minPrice?: number;
   maxPrice?: number;
   isActive?: boolean;
+  inStockOnly?: boolean;
   sortBy?: "name" | "price-asc" | "price-desc" | "newest";
 }
 
@@ -22,13 +23,16 @@ export async function getProducts({
   minPrice,
   maxPrice,
   isActive,
+  inStockOnly,
   sortBy,
 }: ProductFilters) {
   const where: any = {
     sku: { notIn: [...EXCLUDED_SKUS], not: null },
   };
   where.isActive = true;
-
+  if (inStockOnly) {
+    where.stock = { gt: 0 };
+  }
 
   if (search?.trim()) {
     const terms = search.trim().split(/\s+/);
@@ -83,4 +87,10 @@ export async function getProducts({
     },
     products,
   };
+}
+
+export async function getProductById(productId: string) {
+  return prisma.product.findUnique({
+    where: { id: productId },
+  });
 }

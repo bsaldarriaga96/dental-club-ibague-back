@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
-import { getProducts } from "./product.service";
+import { NextFunction, Request, RequestHandler, Response } from "express";
+import { getProductById, getProducts } from "./product.service";
+import { prisma } from "@/lib/prisma";
 
 export async function listProducts(req: Request, res: Response) {
   const {
@@ -11,6 +12,7 @@ export async function listProducts(req: Request, res: Response) {
     minPrice,
     maxPrice,
     isActive,
+    inStockOnly,
     sortBy,
   } = req.query;
 
@@ -30,15 +32,11 @@ export async function listProducts(req: Request, res: Response) {
   }
 
   if (minPrice !== undefined && isNaN(minPriceNumber!)) {
-    return res
-      .status(400)
-      .json({ message: "minPrice debe ser un número" });
+    return res.status(400).json({ message: "minPrice debe ser un número" });
   }
 
   if (maxPrice !== undefined && isNaN(maxPriceNumber!)) {
-    return res
-      .status(400)
-      .json({ message: "maxPrice debe ser un número" });
+    return res.status(400).json({ message: "maxPrice debe ser un número" });
   }
 
   if (
@@ -51,7 +49,6 @@ export async function listProducts(req: Request, res: Response) {
     });
   }
 
-
   const result = await getProducts({
     page: pageNumber,
     pageSize: pageSizeNumber,
@@ -60,10 +57,61 @@ export async function listProducts(req: Request, res: Response) {
     brand: brand as string,
     minPrice: minPriceNumber,
     maxPrice: maxPriceNumber,
-    isActive:
-      isActive !== undefined ? isActive === "true" : undefined,
+    isActive: isActive !== undefined ? isActive === "true" : undefined,
+    inStockOnly: inStockOnly !== undefined ? inStockOnly === "true" : undefined,
     sortBy: sortBy as any,
   });
 
   res.json(result);
 }
+
+export async function getProductByIdController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const productId = String(req.params.productId ?? "").trim();
+    if (!productId)
+      return res.status(400).json({ message: "productId es requerido" });
+
+    const product = await getProductById(productId);
+    if (!product)
+      return res.status(404).json({ message: "Producto no encontrado" });
+
+    return res.json(product);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export const getFeaturedProductsController: RequestHandler = async (req, res, next) => {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        reference: "Destacado",
+        isActive: true,
+        stock: { gt: 0 },
+      },
+      take: 8,
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        description: true, 
+        price: true,
+        //image: true,
+        category: true,
+        brand: true,
+        sku: true,
+        stock: true,
+        isActive: true,
+      },
+    });
+
+    return res.json({ products });
+  } catch (err) {
+    next(err);
+  }
+};
+

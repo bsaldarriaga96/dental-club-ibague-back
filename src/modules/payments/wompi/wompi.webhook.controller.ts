@@ -3,16 +3,6 @@ import { markOrderPaid, markOrderFailed } from "../../orders/orders.service";
 import { prisma } from "../../../lib/prisma";
 
 export const wompiWebhookController: RequestHandler = async (req, res) => {
-  // al inicio del controller
-  console.log("[WOMPI WEBHOOK] content-type:", req.headers["content-type"]);
-  console.log(
-    "[WOMPI WEBHOOK] body bytes:",
-    Buffer.isBuffer(req.body) ? req.body.length : "not-buffer",
-  );
-  console.log(
-    "[WOMPI WEBHOOK] raw:",
-    Buffer.isBuffer(req.body) ? req.body.toString("utf8") : req.body,
-  );
 
   try {
     const rawBody = Buffer.isBuffer(req.body)
@@ -47,7 +37,7 @@ export const wompiWebhookController: RequestHandler = async (req, res) => {
       return res.status(200).json({ ok: true });
     }
 
-    // ✅ Idempotencia: ya finalizada
+    // Idempotencia
     if (order.status === "PAID" || order.status === "FAILED") {
       return res.status(200).json({ ok: true });
     }
@@ -136,7 +126,6 @@ export const wompiWebhookController: RequestHandler = async (req, res) => {
         detail: status,
       });
     } else {
-      console.log("[WH] Estado no final:", status);
     }
 
     return res.json({ ok: true });

@@ -1,4 +1,3 @@
-// src/modules/payments/wompi/wompi.controller.ts
 import type { RequestHandler } from "express";
 import { buildIntegritySignature } from "./wompi.service";
 import { createOrder } from "../../orders/orders.service";

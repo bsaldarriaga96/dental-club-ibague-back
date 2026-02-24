@@ -1,7 +1,42 @@
 import { prisma } from "../../lib/prisma";
 import { ORDER_CURRENCY } from "../../constants/order";
+import { Prisma } from "@prisma/client";
 
 type CreateOrderItemInput = { productId: string; quantity: number };
+
+export const orderDetailSelect = {
+  id: true,
+  status: true,
+  createdAt: true,
+
+  currency: true,
+  subtotal: true,
+  shipping: true,
+  total: true,
+
+  paymentMethod: true,
+  paymentReference: true,
+  paymentStatusDetail: true,
+
+  shipDepartment: true,
+  shipCity: true,
+  shipNeighborhood: true,
+  shipAddress: true,
+  shipNotes: true,
+
+  items: {
+    select: {
+      productId: true,
+      name: true,
+      image: true,
+      sku: true,
+      unitPrice: true,
+      quantity: true,
+    },
+  },
+} satisfies Prisma.OrderSelect;
+
+export type OrderDetail = Prisma.OrderGetPayload<{ select: typeof orderDetailSelect }>;
 
 export async function createOrder(params: {
   userId?: string | null;
@@ -42,7 +77,6 @@ export async function createOrder(params: {
   const shipping = 0;
   const total = subtotal + shipping;
 
-  // Referencia única (no la repitas o Wompi te rechaza)
   const paymentReference = `ORD-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
   return prisma.order.create({
@@ -74,42 +108,26 @@ export async function createOrder(params: {
   });
 }
 
-export async function getOrderById(orderId: string) {
-  return prisma.order.findUnique({
-    where: { id: orderId },
-    select: {
-      id: true,
-      status: true,
-      createdAt: true,
 
-      currency: true,
-      subtotal: true,
-      shipping: true,
-      total: true,
-
-      paymentMethod: true,
-      paymentReference: true,
-      paymentStatusDetail: true,
-
-      shipDepartment: true,
-      shipCity: true,
-      shipNeighborhood: true,
-      shipAddress: true,
-      shipNotes: true,
-
-      items: {
-        select: {
-          productId: true,
-          name: true,
-          image: true,
-          sku: true,
-          unitPrice: true,
-          quantity: true,
-        },
-      },
-    },
+export async function getMyOrderById(params: {
+  userId: string;
+  orderId: string;
+}): Promise<OrderDetail | null> {
+  return prisma.order.findFirst({
+    where: { id: params.orderId, userId: params.userId },
+    select: orderDetailSelect,
   });
 }
+
+
+export async function getMyOrders(userId: string): Promise<OrderDetail[]> {
+  return prisma.order.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    select: orderDetailSelect,
+  });
+}
+
 
 export async function markOrderPaid(params: {
   paymentReference: string;
@@ -128,7 +146,7 @@ export async function markOrderPaid(params: {
     },
   });
 
-  return result; // { count }
+  return result;
 }
 
 export async function markOrderFailed(params: {
@@ -148,5 +166,5 @@ export async function markOrderFailed(params: {
     },
   });
 
-  return result; // { count }
+  return result;
 }
