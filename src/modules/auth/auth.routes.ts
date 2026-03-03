@@ -5,6 +5,7 @@ import {
   logoutController,
   meController,
   claimOrdersController,
+  patchMeController,
 } from "./auth.controller";
 import { requireUser } from "@/middlewares/requireUser";
 
@@ -14,4 +15,5 @@ authRouter.post("/register", registerController);
 authRouter.post("/login", loginController);
 authRouter.post("/logout", logoutController);
 authRouter.get("/me", meController);
+authRouter.patch("/me", patchMeController);
 authRouter.post("/claim-orders", requireUser, claimOrdersController);
