@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { registerUser, validateLogin, getPublicUserById, claimOrdersForUser  } from "./auth.service";
+import { registerUser, validateLogin, getPublicUserById, claimOrdersForUser, updatePublicUserById  } from "./auth.service";
 
 export const registerController: RequestHandler = async (req, res) => {
   try {
@@ -104,5 +104,30 @@ export const claimOrdersController: RequestHandler = async (req, res, next) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
     next(err);
+  }
+};
+
+export const patchMeController: RequestHandler = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const { name, phone, documentType, documentNumber } = req.body as {
+      name?: string;
+      phone?: string;
+      documentType?: string;
+      documentNumber?: string;
+    };
+
+    const user = await updatePublicUserById(userId, {
+      name,
+      phone,
+      documentType,
+      documentNumber,
+    });
+
+    return res.json({ user });
+  } catch (err: any) {
+    return res.status(500).json({ message: err.message ?? "Error actualizando perfil" });
   }
 };

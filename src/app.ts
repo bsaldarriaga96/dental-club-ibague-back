@@ -11,6 +11,7 @@ import connectPgSimple from "connect-pg-simple";
 import pg from "pg";
 import { authRouter } from "./modules/auth/auth.routes";
 import cookieParser from "cookie-parser";
+import addressesRouter from "./modules/addresses/addresses.routes";
 
 const allowlist = [
   "https://www.dentalclubibague.com",
@@ -102,6 +103,7 @@ export function createApp() {
   app.use("/api/sync", syncRoutes);
   app.use("/api/payments/wompi", wompiRouter);
   app.use("/api/orders", ordersRouter);
+  app.use("/api/addresses", addressesRouter);
 
   // 404
   app.use((_req: Request, res: Response) => {

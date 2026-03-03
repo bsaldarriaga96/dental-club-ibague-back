@@ -30,9 +30,12 @@ export async function registerUser(params: {
   const emailNorm = normalizeEmail(params.email);
 
   if (!params.password) throw new Error("Password requerido");
-  if (params.password.length > MAX_PASSWORD_LEN) throw new Error("Password demasiado largo");
+  if (params.password.length > MAX_PASSWORD_LEN)
+    throw new Error("Password demasiado largo");
 
-  const existing = await prisma.user.findUnique({ where: { email: emailNorm } });
+  const existing = await prisma.user.findUnique({
+    where: { email: emailNorm },
+  });
   if (existing) {
     const err: any = new Error("USER_EMAIL_EXISTS");
     err.code = "USER_EMAIL_EXISTS";
@@ -49,7 +52,15 @@ export async function registerUser(params: {
       documentType: params.documentType?.trim() || null,
       documentNumber: params.documentNumber?.trim() || null,
     },
-    select: { id: true, email: true, name: true, phone: true, documentType: true, documentNumber: true, createdAt: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      phone: true,
+      documentType: true,
+      documentNumber: true,
+      createdAt: true,
+    },
   });
   return user;
 }
@@ -59,8 +70,6 @@ export async function validateLogin(params: {
   password: string;
 }): Promise<{ id: string; email: string; name: string | null }> {
   const emailNorm = normalizeEmail(params.email);
-
-  
 
   const user = await prisma.user.findUnique({
     where: { email: emailNorm },
@@ -75,10 +84,20 @@ export async function validateLogin(params: {
   return { id: user.id, email: user.email, name: user.name };
 }
 
-export async function getPublicUserById(userId: string): Promise<PublicUser | null> {
+export async function getPublicUserById(
+  userId: string,
+): Promise<PublicUser | null> {
   return prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, name: true, phone: true, documentType: true, documentNumber: true, createdAt: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      phone: true,
+      documentType: true,
+      documentNumber: true,
+      createdAt: true,
+    },
   });
 }
 
@@ -108,3 +127,38 @@ export async function claimOrdersForUser(userId: string) {
   return { claimed: result.count };
 }
 
+export async function updatePublicUserById(
+  userId: string,
+  params: {
+    name?: string;
+    phone?: string;
+    documentType?: string;
+    documentNumber?: string;
+  },
+): Promise<PublicUser> {
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      name: params.name !== undefined ? params.name.trim() || null : undefined,
+      phone:
+        params.phone !== undefined ? params.phone.trim() || null : undefined,
+      documentType:
+        params.documentType !== undefined
+          ? params.documentType.trim() || null
+          : undefined,
+      documentNumber:
+        params.documentNumber !== undefined
+          ? params.documentNumber.trim() || null
+          : undefined,
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      phone: true,
+      documentType: true,
+      documentNumber: true,
+      createdAt: true,
+    },
+  });
+}
