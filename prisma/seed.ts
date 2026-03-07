@@ -8,7 +8,7 @@ function normalizeEmail(email: string) {
 }
 
 async function main() {
-  const adminEmail = normalizeEmail("b.saldamado@gmail.com");
+  const adminEmail = normalizeEmail("dentalclubibagues@gmail.com");
 
   const adminPassword = process.env.SEED_ADMIN_PASSWORD || "Admin12345*";
   const bcryptCost = Number(process.env.BCRYPT_COST || 12);
