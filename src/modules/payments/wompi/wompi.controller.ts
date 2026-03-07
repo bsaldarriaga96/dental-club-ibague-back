@@ -17,6 +17,7 @@ export const initCheckout: RequestHandler = async (req, res) => {
     // Crear orden real en BD
     const order = await createOrder({
       userId: req.user?.id ?? null,
+      customerEmail: req.body.customerEmail,
       ...req.body,
     });
 
