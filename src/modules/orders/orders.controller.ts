@@ -22,20 +22,38 @@ export const getOrderByReferenceController: RequestHandler = async (
   if (!reference)
     return res.status(400).json({ message: "reference es requerido" });
 
-  const order = await prisma.order.findUnique({
-    where: { paymentReference: reference },
-    select: {
-      id: true,
-      status: true,
-      paymentStatusDetail: true,
-      total: true,
-      currency: true,
-      createdAt: true,
-    },
-  });
+   try {
+    let order = await prisma.order.findUnique({
+      where: { paymentReference: reference },
+      select: {
+        id: true,
+        status: true,
+        paymentStatusDetail: true,
+        total: true,
+        currency: true,
+        createdAt: true,
+        userId: true, 
+      },
+    });
 
-  if (!order) return res.status(404).json({ message: "Order not found" });
-  return res.json(order);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    const userId = req.user?.id;
+    if (userId && !order.userId) {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { userId },
+      });
+      order.userId = userId;
+    }
+
+    const { userId: _, ...orderDto } = order;
+    return res.json(orderDto);
+
+  } catch (error) {
+    console.error('Error getOrderByRef:', error);
+    return res.status(500).json({ message: "Error consultando orden" });
+  }
 };
 
 
@@ -95,7 +113,6 @@ export const getMyOrderByIdController: RequestHandler = async (req, res, next) =
     const userId = req.session.userId!;
     const orderId = String(req.params.orderId ?? "").trim();
     if (!orderId) return res.status(400).json({ message: "orderId es requerido" });
-
     const order = await getMyOrderById({ userId, orderId });
     if (!order) return res.status(404).json({ message: "Order not found" });
 

@@ -33,7 +33,6 @@ async function main() {
     select: { id: true, email: true, role: true, createdAt: true },
   });
 
-  console.log("Seed OK - Admin:", admin);
 }
 
 main()
