@@ -20,7 +20,7 @@ export const wompiWebhookController: RequestHandler = async (req, res) => {
     if (!referenceFromEvent)
       return res.status(400).json({ message: "Missing transaction.reference" });
 
-    // 1) Buscar orden por reference
+    // Buscar orden por reference
     const order = await prisma.order.findUnique({
       where: { paymentReference: referenceFromEvent },
       select: {
@@ -42,13 +42,13 @@ export const wompiWebhookController: RequestHandler = async (req, res) => {
       return res.status(200).json({ ok: true });
     }
 
-    // 2) Tomar datos del evento (ya vienen en el webhook)
+    //Tomar datos del evento
     const status: string | undefined = tx?.status;
     const amountInCents: number | undefined = tx?.amount_in_cents;
     const currency: string | undefined = tx?.currency;
     const referenceFromApi: string | undefined = tx?.reference;
 
-    // 3) Validaciones
+    // Validaciones
     if (!status) {
       console.warn("[WH] Missing transaction.status", {
         referenceFromEvent,
@@ -108,7 +108,7 @@ export const wompiWebhookController: RequestHandler = async (req, res) => {
       return res.status(200).json({ ok: true });
     }
 
-    // 4) Update
+    // Update
     if (status === "APPROVED") {
       await markOrderPaid({
         paymentReference: referenceFromEvent,

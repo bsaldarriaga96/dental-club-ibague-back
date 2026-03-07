@@ -1,6 +1,11 @@
 import { prisma } from "../../lib/prisma";
 import { ORDER_CURRENCY } from "../../constants/order";
 import { Prisma } from "@prisma/client";
+import {
+  sendAdminNewPayment,
+  sendOrderConfirmation,
+  sendOrderFailed,
+} from "@/lib/email";
 
 type CreateOrderItemInput = { productId: string; quantity: number };
 
@@ -36,7 +41,9 @@ export const orderDetailSelect = {
   },
 } satisfies Prisma.OrderSelect;
 
-export type OrderDetail = Prisma.OrderGetPayload<{ select: typeof orderDetailSelect }>;
+export type OrderDetail = Prisma.OrderGetPayload<{
+  select: typeof orderDetailSelect;
+}>;
 
 export async function createOrder(params: {
   userId?: string | null;
@@ -44,6 +51,7 @@ export async function createOrder(params: {
   customerLastName: string;
   customerEmail: string;
   customerPhone: string;
+  customerDocumentType?: string | null;
   customerDocument?: string | null;
   shipDepartment: string;
   shipCity: string;
@@ -88,6 +96,7 @@ export async function createOrder(params: {
       customerLastName: params.customerLastName,
       customerEmail: params.customerEmail,
       customerPhone: params.customerPhone,
+      customerDocumentType: params.customerDocumentType ?? null,
       customerDocument: params.customerDocument ?? null,
 
       shipDepartment: params.shipDepartment,
@@ -108,7 +117,6 @@ export async function createOrder(params: {
   });
 }
 
-
 export async function getMyOrderById(params: {
   userId: string;
   orderId: string;
@@ -119,7 +127,6 @@ export async function getMyOrderById(params: {
   });
 }
 
-
 export async function getMyOrders(userId: string): Promise<OrderDetail[]> {
   return prisma.order.findMany({
     where: { userId },
@@ -127,7 +134,6 @@ export async function getMyOrders(userId: string): Promise<OrderDetail[]> {
     select: orderDetailSelect,
   });
 }
-
 
 export async function markOrderPaid(params: {
   paymentReference: string;
@@ -145,6 +151,18 @@ export async function markOrderPaid(params: {
       paymentStatusDetail: params.detail ?? undefined,
     },
   });
+
+  if (result.count > 0) {
+    const order = await prisma.order.findFirst({
+      where: { paymentReference: params.paymentReference },
+      include: { items: true },
+    });
+
+    await Promise.all([
+      sendOrderConfirmation(order!),
+      sendAdminNewPayment(order!),
+    ]);
+  }
 
   return result;
 }
@@ -165,6 +183,13 @@ export async function markOrderFailed(params: {
       paymentStatusDetail: params.detail ?? undefined,
     },
   });
+
+  if (result.count > 0) {
+    const order = await prisma.order.findFirst({
+      where: { paymentReference: params.paymentReference },
+    });
+    await sendOrderFailed(order!);
+  }
 
   return result;
 }

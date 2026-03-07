@@ -48,19 +48,26 @@ enum PaymentMethod {
   CARD
 }
 
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
 model User {
-  id              String  @id @default(uuid())
-  email           String  @unique
-  passwordHash    String
-  name            String?
-  phone           String?
-  documentType    String?
-  documentNumber  String?
+  id             String  @id @default(uuid())
+  email          String  @unique
+  passwordHash   String
+  name           String?
+  phone          String?
+  documentType   String?
+  documentNumber String?
+
+  role UserRole @default(CUSTOMER)
 
   emailVerified Boolean   @default(false)
   verifiedAt    DateTime?
 
-  orders Order[]
+  orders    Order[]
   addresses Address[]
 
   createdAt DateTime @default(now())
@@ -76,11 +83,12 @@ model Order {
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  customerName     String
-  customerLastName String
-  customerEmail    String
-  customerPhone    String
-  customerDocument String?
+  customerName          String
+  customerLastName      String
+  customerEmail         String
+  customerPhone         String
+  customerDocumentType  String?
+  customerDocument      String?
 
   shipDepartment   String
   shipCity         String
@@ -106,6 +114,10 @@ model Order {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  carrier        String?
+  trackingNumber String?
+  shippedAt      DateTime?
 
   @@index([userId, createdAt])
   @@index([customerEmail, createdAt])
@@ -135,9 +147,9 @@ model OrderItem {
 }
 
 model Address {
-  id           String  @id @default(uuid())
-  userId       String
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   label        String
   department   String
@@ -147,8 +159,8 @@ model Address {
   notes        String?
   isDefault    Boolean @default(false)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([userId, isDefault])
