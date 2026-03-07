@@ -14,13 +14,13 @@ export const initCheckout: RequestHandler = async (req, res) => {
       return res.status(500).json({ message: "Falta WOMPI_INTEGRITY_SECRET" });
     }
 
-    // 1) Crear orden real en BD (guest por ahora)
+    // Crear orden real en BD
     const order = await createOrder({
       userId: req.user?.id ?? null,
-      ...req.body, // aquí van customer*, ship*, items[]
+      ...req.body,
     });
 
-    // 2) Datos widget
+    // Datos widget
     const currency = "COP" as const;
     const reference = order.paymentReference!;
     const amountInCents = Math.round(Number(order.total) * 100);
@@ -32,7 +32,6 @@ export const initCheckout: RequestHandler = async (req, res) => {
       integritySecret,
     });
 
-    // 3) Respuesta para el front
     return res.json({
       orderId: order.id,
       publicKey,

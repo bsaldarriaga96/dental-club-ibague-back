@@ -12,6 +12,9 @@ import pg from "pg";
 import { authRouter } from "./modules/auth/auth.routes";
 import cookieParser from "cookie-parser";
 import addressesRouter from "./modules/addresses/addresses.routes";
+import { requireUser } from "./middlewares/requireUser";
+import { requireAdmin } from "./middlewares/requireAdmin";
+import { adminRouter } from "./modules/admin/admin.router";
 
 const allowlist = [
   "https://www.dentalclubibague.com",
@@ -104,6 +107,8 @@ export function createApp() {
   app.use("/api/payments/wompi", wompiRouter);
   app.use("/api/orders", ordersRouter);
   app.use("/api/addresses", addressesRouter);
+  app.use("/api/admin", requireUser, requireAdmin, adminRouter);
+
 
   // 404
   app.use((_req: Request, res: Response) => {

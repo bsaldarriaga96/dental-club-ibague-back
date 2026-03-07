@@ -92,6 +92,7 @@ export async function getPublicUserById(
     select: {
       id: true,
       email: true,
+      role: true,
       name: true,
       phone: true,
       documentType: true,
