@@ -106,6 +106,7 @@ export const getFeaturedProductsController: RequestHandler = async (req, res, ne
         sku: true,
         stock: true,
         isActive: true,
+        images: true,
       },
     });
 
