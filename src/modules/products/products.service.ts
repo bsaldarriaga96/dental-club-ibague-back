@@ -81,6 +81,7 @@ export async function getProducts({
         description: true,
         price: true,
         imageUrl: true,
+        images: true,
         brand: true,
         category: true,
         stock: true,
@@ -104,5 +105,18 @@ export async function getProducts({
 export async function getProductById(productId: string) {
   return prisma.product.findUnique({
     where: { id: productId },
+    include: {
+      images: {
+        orderBy: { position: "asc" },
+        select: {
+          id: true,
+          url: true,
+          path: true,
+          alt: true,
+          position: true,
+          isPrimary: true,
+        },
+      },
+    },
   });
 }
