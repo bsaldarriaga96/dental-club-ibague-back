@@ -1,5 +1,5 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { getProductById, getProducts } from "./product.service";
+import { getProductById, getProducts } from "./products.service";
 import { prisma } from "@/lib/prisma";
 
 export async function listProducts(req: Request, res: Response) {
@@ -100,7 +100,7 @@ export const getFeaturedProductsController: RequestHandler = async (req, res, ne
         name: true,
         description: true, 
         price: true,
-        //image: true,
+        imageUrl: true,
         category: true,
         brand: true,
         sku: true,
