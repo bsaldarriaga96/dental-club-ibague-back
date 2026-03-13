@@ -8,10 +8,17 @@ function normalizeEmail(email: string) {
 }
 
 async function main() {
-  const adminEmail = normalizeEmail("dentalclubibagues@gmail.com");
+  const emailUser = process.env.EMAIL_USER;
+  if (!emailUser) {
+    throw new Error("EMAIL_USER environment variable is not set");
+  }
+  const adminEmail = normalizeEmail(emailUser);
 
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD || "Admin12345*";
-  const bcryptCost = Number(process.env.BCRYPT_COST || 12);
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!adminPassword) {
+    throw new Error("SEED_ADMIN_PASSWORD environment variable is not set");
+  }
+  const bcryptCost = Number(process.env.BCRYPT_COST);
   const passwordHash = await bcrypt.hash(adminPassword, bcryptCost);
 
   const admin = await prisma.user.upsert({

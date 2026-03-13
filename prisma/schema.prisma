@@ -1,15 +1,15 @@
-datasource db {
-  provider = "postgresql"
-}
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
+datasource db {
+  provider = "postgresql"
+}
+
 model Product {
-  id          String  @id @default(uuid())
-  siigoId     String  @unique
+  id          String      @id @default(uuid())
+  siigoId     String      @unique
   name        String
   sku         String?
   description String?
@@ -18,15 +18,114 @@ model Product {
   brand       String?
   category    String?
   reference   String?
-  isActive    Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  orderItems OrderItem[]
+  imageUrl    String?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
 
   @@index([price])
   @@index([category])
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  passwordHash   String
+  name           String?
+  phone          String?
+  documentType   String?
+  documentNumber String?
+  role           UserRole  @default(CUSTOMER)
+  emailVerified  Boolean   @default(false)
+  verifiedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  addresses      Address[]
+  orders         Order[]
+
+  @@index([emailVerified])
+}
+
+model Order {
+  id                   String          @id @default(uuid())
+  status               OrderStatus     @default(PENDING)
+  userId               String?
+  customerName         String
+  customerLastName     String
+  customerEmail        String
+  customerPhone        String
+  customerDocumentType String?
+  customerDocument     String?
+  shipDepartment       String
+  shipCity             String
+  shipNeighborhood     String
+  shipAddress          String
+  shipNotes            String?
+  currency             String          @default("COP")
+  subtotal             Decimal         @db.Decimal(14, 2)
+  shipping             Decimal         @default(0) @db.Decimal(14, 2)
+  total                Decimal         @db.Decimal(14, 2)
+  paymentProvider      PaymentProvider @default(WOMPI)
+  paymentMethod        PaymentMethod   @default(WOMPI_WIDGET)
+  paymentReference     String?         @unique
+  wompiTransactionId   String?         @unique
+  paymentStatusDetail  String?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  carrier              String?
+  trackingNumber       String?
+  shippedAt            DateTime?
+  user                 User?           @relation(fields: [userId], references: [id])
+  items                OrderItem[]
+
+  @@index([userId, createdAt])
+  @@index([customerEmail, createdAt])
+  @@index([status, createdAt])
+  @@index([paymentReference])
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  productId String
+  name      String
+  sku       String?
+  image     String?
+  unitPrice Decimal  @db.Decimal(14, 2)
+  quantity  Int
+  createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Address {
+  id           String   @id @default(uuid())
+  userId       String
+  label        String
+  department   String
+  city         String
+  neighborhood String
+  address      String
+  notes        String?
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isDefault])
+}
+
+model session {
+  sid    String   @id @db.VarChar
+  sess   Json     @db.Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire], map: "IDX_session_expire")
 }
 
 enum OrderStatus {
@@ -51,117 +150,4 @@ enum PaymentMethod {
 enum UserRole {
   CUSTOMER
   ADMIN
-}
-
-model User {
-  id             String  @id @default(uuid())
-  email          String  @unique
-  passwordHash   String
-  name           String?
-  phone          String?
-  documentType   String?
-  documentNumber String?
-
-  role UserRole @default(CUSTOMER)
-
-  emailVerified Boolean   @default(false)
-  verifiedAt    DateTime?
-
-  orders    Order[]
-  addresses Address[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([emailVerified])
-}
-
-model Order {
-  id     String      @id @default(uuid())
-  status OrderStatus @default(PENDING)
-
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  customerName          String
-  customerLastName      String
-  customerEmail         String
-  customerPhone         String
-  customerDocumentType  String?
-  customerDocument      String?
-
-  shipDepartment   String
-  shipCity         String
-  shipNeighborhood String
-  shipAddress      String
-  shipNotes        String?
-
-  currency String  @default("COP")
-  subtotal Decimal @db.Decimal(14, 2)
-  shipping Decimal @default(0) @db.Decimal(14, 2)
-  total    Decimal @db.Decimal(14, 2)
-
-  paymentProvider PaymentProvider @default(WOMPI)
-  paymentMethod   PaymentMethod   @default(WOMPI_WIDGET)
-
-  paymentReference String? @unique
-
-  wompiTransactionId String? @unique
-
-  paymentStatusDetail String?
-
-  items OrderItem[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  carrier        String?
-  trackingNumber String?
-  shippedAt      DateTime?
-
-  @@index([userId, createdAt])
-  @@index([customerEmail, createdAt])
-  @@index([status, createdAt])
-  @@index([paymentReference])
-}
-
-model OrderItem {
-  id String @id @default(uuid())
-
-  orderId String
-  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-
-  name      String
-  sku       String?
-  image     String?
-  unitPrice Decimal @db.Decimal(14, 2)
-  quantity  Int
-
-  createdAt DateTime @default(now())
-
-  @@index([orderId])
-  @@index([productId])
-}
-
-model Address {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  label        String
-  department   String
-  city         String
-  neighborhood String
-  address      String
-  notes        String?
-  isDefault    Boolean @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([userId, isDefault])
 }

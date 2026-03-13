@@ -74,6 +74,18 @@ export async function getProducts({
       skip: (page - 1) * pageSize,
       take: pageSize,
       orderBy,
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        description: true,
+        price: true,
+        imageUrl: true,
+        brand: true,
+        category: true,
+        stock: true,
+        isActive: true,
+      },
     }),
     prisma.product.count({ where }),
   ]);
