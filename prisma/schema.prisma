@@ -50,6 +50,7 @@ model User {
   email          String    @unique
   passwordHash   String
   name           String?
+  lastName       String?
   phone          String?
   documentType   String?
   documentNumber String?
