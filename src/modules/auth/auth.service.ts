@@ -9,6 +9,7 @@ export type PublicUser = {
   id: string;
   email: string;
   name: string | null;
+  lastName: string | null;
   phone: string | null;
   documentType: string | null;
   documentNumber: string | null;
@@ -23,6 +24,7 @@ export async function registerUser(params: {
   email: string;
   password: string;
   name?: string | null;
+  lastName?: string | null;
   phone?: string | null;
   documentType?: string | null;
   documentNumber?: string | null;
@@ -48,6 +50,7 @@ export async function registerUser(params: {
       email: emailNorm,
       passwordHash,
       name: params.name?.trim() || null,
+      lastName: params.lastName?.trim() || null,
       phone: params.phone?.trim() || null,
       documentType: params.documentType?.trim() || null,
       documentNumber: params.documentNumber?.trim() || null,
@@ -56,6 +59,7 @@ export async function registerUser(params: {
       id: true,
       email: true,
       name: true,
+      lastName: true,
       phone: true,
       documentType: true,
       documentNumber: true,
@@ -94,6 +98,7 @@ export async function getPublicUserById(
       email: true,
       role: true,
       name: true,
+      lastName: true,
       phone: true,
       documentType: true,
       documentNumber: true,
@@ -132,6 +137,7 @@ export async function updatePublicUserById(
   userId: string,
   params: {
     name?: string;
+    lastName?: string;
     phone?: string;
     documentType?: string;
     documentNumber?: string;
@@ -141,6 +147,7 @@ export async function updatePublicUserById(
     where: { id: userId },
     data: {
       name: params.name !== undefined ? params.name.trim() || null : undefined,
+      lastName: params.lastName !== undefined ? params.lastName.trim() || null : undefined,
       phone:
         params.phone !== undefined ? params.phone.trim() || null : undefined,
       documentType:
@@ -156,6 +163,7 @@ export async function updatePublicUserById(
       id: true,
       email: true,
       name: true,
+      lastName: true,
       phone: true,
       documentType: true,
       documentNumber: true,
