@@ -1,65 +1,67 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import * as service from "./adminProducts.service";
 
-export async function uploadProductImagesController(
-  req: Request<{ productId: string }>,
-  res: Response
-) {
-  try {
-    const files = (req.files as Express.Multer.File[]) ?? [];
-    const result = await service.uploadProductImages(req.params.productId, files);
-    return res.json(result);
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error interno del servidor";
-    return res.status(400).json({ message });
-  }
-}
+type ProductParams = {
+  productId: string;
+};
 
-export async function listProductImagesController(
-  req: Request<{ productId: string }>,
-  res: Response
-) {
-  try {
-    const images = await service.listProductImages(req.params.productId);
-    return res.json({ images });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error interno del servidor";
-    return res.status(400).json({ message });
-  }
-}
+type UpdateDescriptionBody = {
+  description: string | null;
+};
 
-export async function setPrimaryProductImageController(
-  req: Request<{ productId: string; imageId: string }>,
-  res: Response
+export async function getDescription(
+  req: Request<ProductParams>,
+  res: Response,
+  next: NextFunction
 ) {
   try {
-    const result = await service.setPrimaryProductImage(
-      req.params.productId,
-      req.params.imageId
+    const result = await service.getProductDescription(
+      req.params.productId
     );
-    return res.json(result);
+
+    return res.status(200).json(result);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error interno del servidor";
-    return res.status(400).json({ message });
+    next(error);
   }
 }
 
-export async function deleteProductImageController(
-  req: Request<{ productId: string; imageId: string }>,
-  res: Response
+export async function updateDescription(
+  req: Request<ProductParams, unknown, UpdateDescriptionBody>,
+  res: Response,
+  next: NextFunction
 ) {
   try {
-    const result = await service.deleteProductImage(
+    const { description } = req.body;
+
+    if (description !== null && typeof description !== "string") {
+      return res.status(400).json({
+        message: "La descripción debe ser texto o null",
+      });
+    }
+
+    const result = await service.updateProductDescription(
       req.params.productId,
-      req.params.imageId
+      description
     );
-    return res.json(result);
+
+    return res.status(200).json(result);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error interno del servidor";
-    return res.status(400).json({ message });
+    next(error);
+  }
+}
+
+export async function deleteDescription(
+  req: Request<ProductParams>,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const result = await service.deleteProductDescription(
+      req.params.productId
+    );
+
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
   }
 }
