@@ -5,7 +5,8 @@ import {
   listProductImagesController,
   setPrimaryProductImageController,
   deleteProductImageController,
-} from "./adminProducts.controller";
+} from "./adminProductImages.controller";
+import * as adminProductsController from "./adminProducts.controller";
 
 export const adminProductsRouter = Router();
 
@@ -27,3 +28,6 @@ adminProductsRouter.delete(
   "/:productId/images/:imageId",
   deleteProductImageController
 );
+adminProductsRouter.get("/:productId/description", adminProductsController.getDescription);
+adminProductsRouter.patch("/:productId/description", adminProductsController.updateDescription);
+adminProductsRouter.delete("/:productId/description", adminProductsController.deleteDescription);
