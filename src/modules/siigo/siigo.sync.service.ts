@@ -31,7 +31,6 @@ export async function syncProductsFromSiigo() {
           stock: product.stock,
           reference: product.reference,
           brand: product.brand,
-          description: product.description,
           isActive: product.isActive,
         },
         create: {
@@ -42,7 +41,6 @@ export async function syncProductsFromSiigo() {
           stock: product.stock,
           reference: product.reference,
           brand: product.brand,
-          description: product.description,
           isActive: product.isActive,
         },
       });
