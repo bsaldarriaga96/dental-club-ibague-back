@@ -2,7 +2,6 @@ export function mapSiigoProduct(p: any) {
   return {
     siigoId: p.id,
     name: p.name,
-    description: p.description,
     sku: p.code,
     type: p.type,
     reference: p.reference,
